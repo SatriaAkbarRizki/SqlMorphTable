@@ -43,6 +43,8 @@ body {
     color 0.3s;
   min-height: 100vh;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Splash Screen */
@@ -127,6 +129,12 @@ body {
   .container {
     grid-template-columns: 1fr;
   }
+}
+
+.main-content,
+.sidebar {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .card {
@@ -296,6 +304,8 @@ button.btn {
   border: 1px solid var(--border);
   display: flex;
   justify-content: center;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 #tableContainer {
@@ -391,4 +401,40 @@ td {
 .adblock-card p {
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .logo {
+    font-size: 1.25rem;
+  }
+
+  .container {
+    padding: 0 1rem 3rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+  
+  button.btn {
+    width: 100%;
+  }
+
+  #tableContainerWrapper {
+    padding: 1rem;
+    display: block; /* Fixes left-cutoff issues when a flex-centered child overflows */
+  }
+
+  table th, table td {
+    padding: 0.75rem 1rem;
+  }
+  
+  .empty-state {
+    padding: 2rem 1rem;
+  }
 }
