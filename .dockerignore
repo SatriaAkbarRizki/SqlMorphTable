@@ -1,0 +1,6 @@
+modify_files.py
+.dockerignore
+Dockerfile
+docker-compose.yml
+.git
+.gitignore

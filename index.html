@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SQL Morph Table - SQL Schema Visualizer</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/svg+xml" href="Assets/favicon.svg" />
+  </head>
+  <body data-theme="dark">
+    <div id="splash">
+      <div class="splash-logo">SQL Morph Table</div>
+      <div style="margin-top: 1rem; opacity: 0.8">
+        Transforming code sql to table...
+      </div>
+    </div>
+
+    <header class="header">
+      <div class="logo">
+        <img src="Assets/274904_database-icon.svg" class="icon" alt="Database Icon" style="width: 1.5rem; height: 1.5rem;" />
+        SQL Morph Table
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <svg id="themeIcon" class="icon" viewBox="0 0 24 24">
+          <path
+            d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM5.99 19.42c.39.39 1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41z"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <main class="container">
+      <div class="main-content">
+        <div class="card">
+          <div class="section-title">SQL Input</div>
+          <textarea
+            id="sqlInput"
+            placeholder="Paste your CREATE TABLE statement here..."
+          >
+CREATE TABLE users (
+    id INT(11) PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    profile_id INT,
+    FOREIGN KEY (profile_id) REFERENCES profiles(id)
+);</textarea
+          >
+
+          <div class="actions">
+            <button class="btn btn-primary" onclick="parseSQL()">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Visualize Schema
+            </button>
+            <button class="btn btn-secondary" onclick="exportToPNG()">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+              </svg>
+              Download PNG
+            </button>
+          </div>
+        </div>
+
+        <div id="tableContainerWrapper">
+          <div id="tableContainer">
+            <table id="targetTable">
+              <thead>
+                <tr>
+                  <th class="t-header">Field Name</th>
+                  <th class="t-header">Data Type</th>
+                  <th class="t-header">Size</th>
+                  <th class="t-header">Constraints</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr>
+                  <td colspan="4" class="empty-state">
+                    No schema generated yet. Enter SQL above to begin.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="card controls-group">
+          <div>
+            <div class="section-title">Styling</div>
+            <div class="control-item">
+              <label>Header Theme</label>
+              <div class="palette-grid" id="suggestPalette"></div>
+              <div class="color-picker-wrapper">
+                <input
+                  type="color"
+                  id="manualPicker"
+                  value="#818cf8"
+                  oninput="applyColor(this.value, 'manual')"
+                />
+                <span
+                  id="hexCode"
+                  style="font-family: monospace; font-size: 0.8rem"
+                  >#818CF8</span
+                >
+              </div>
+            </div>
+
+            <div class="control-item" style="margin-top: 1.5rem">
+              <label>Canvas Background</label>
+              <div class="color-picker-wrapper">
+                <input
+                  type="color"
+                  id="canvasPicker"
+                  value="#ffffff"
+                  oninput="applyCanvasColor(this.value)"
+                />
+                <span
+                  id="canvasHexCode"
+                  style="font-family: monospace; font-size: 0.8rem"
+                  >#FFFFFF</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title">Typography</div>
+            <div class="control-item" style="margin-bottom: 1rem">
+              <label>Header Font</label>
+              <select id="headerFont" onchange="applyFontSettings()">
+                <option value="'Plus Jakarta Sans', sans-serif">
+                  Plus Jakarta Sans
+                </option>
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'JetBrains Mono', monospace">
+                  JetBrains Mono
+                </option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Playfair Display', serif">
+                  Playfair Display
+                </option>
+              </select>
+            </div>
+            <div class="control-item" style="margin-bottom: 1rem">
+              <label>Body Font</label>
+              <select id="bodyFont" onchange="applyFontSettings()">
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Plus Jakarta Sans', sans-serif">
+                  Plus Jakarta Sans
+                </option>
+                <option value="'JetBrains Mono', monospace">
+                  JetBrains Mono
+                </option>
+                <option value="system-ui, sans-serif">System Sans</option>
+                <option value="Georgia, serif">Georgia</option>
+              </select>
+            </div>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem"
+            >
+              <div class="control-item">
+                <label>H-Size (px)</label>
+                <input
+                  type="number"
+                  id="headerSize"
+                  value="15"
+                  min="8"
+                  max="48"
+                  onchange="applyFontSettings()"
+                />
+              </div>
+              <div class="control-item">
+                <label>B-Size (px)</label>
+                <input
+                  type="number"
+                  id="bodySize"
+                  value="14"
+                  min="8"
+                  max="48"
+                  onchange="applyFontSettings()"
+                />
+              </div>
+            </div>
+
+            <div class="font-preview-bar">
+              <div id="previewHeader" style="font-weight: 700">Aa Header</div>
+              <div id="previewBody">Aa Body</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer style="text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">
+      <div>Satriatech 2026</div>
+      <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7; font-weight: 400;">
+        Database Icon by Xnix pro on <a href="https://icon-icons.com/authors/1521-xnix-pro" style="color: inherit; text-decoration: underline;" target="_blank">Icon-Icons.com</a>
+      </div>
+    </footer>
+
+    <!-- Adblock Modal -->
+    <div id="adblockModal">
+      <div class="adblock-card">
+        <svg class="icon" viewBox="0 0 24 24" style="width: 3rem; height: 3rem; margin-bottom: 1rem; color: #ef4444;">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        <h2>Adblocker Detected</h2>
+        <p>Please disable your adblocker to continue using SQL Morph Table.</p>
+        <button class="btn btn-primary" style="margin-top: 1.5rem; width: 100%" onclick="location.reload()">I have disabled it</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
