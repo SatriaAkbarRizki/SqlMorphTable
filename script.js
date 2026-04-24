@@ -82,22 +82,19 @@ function applyColor(color, type, element = null) {
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   document
     .querySelectorAll(".t-header")
-    .forEach(
-      (th) => (th.style.color = brightness > 155 ? "#000" : "#fff"),
-    );
+    .forEach((th) => (th.style.color = brightness > 155 ? "#000" : "#fff"));
 }
 
 function applyCanvasColor(color) {
   canvasSelection = color;
-  document.getElementById("canvasHexCode").innerText =
-    color.toUpperCase();
+  document.getElementById("canvasHexCode").innerText = color.toUpperCase();
   document.documentElement.style.setProperty("--canvas-bg", color);
 
   const table = document.getElementById("targetTable");
   if (table) {
     const isNotWhite = color.toLowerCase() !== "#ffffff";
     table.style.color = isNotWhite ? "#ffffff" : "#1e293b";
-    
+
     const emptyState = table.querySelector(".empty-state");
     if (emptyState) {
       emptyState.style.color = isNotWhite ? "#cbd5e1" : "#64748b";
@@ -135,9 +132,7 @@ function parseSQL() {
   const start = input.indexOf("(");
   const end = input.lastIndexOf(")");
   if (start === -1 || end === -1)
-    return alert(
-      "Invalid SQL format. Please check your CREATE TABLE syntax.",
-    );
+    return alert("Invalid SQL format. Please check your CREATE TABLE syntax.");
 
   tbody.innerHTML = "";
   const content = input.substring(start + 1, end);
@@ -150,8 +145,7 @@ function parseSQL() {
     /FOREIGN KEY\s*\(\s*(?:`|")?(\w+)(?:`|")?\s*\)\s*REFERENCES\s*(?:`|")?(\w+)(?:`|")?\s*\(\s*(?:`|")?(\w+)(?:`|")?\s*\)/gi;
   let fkMatch;
   while ((fkMatch = fkRegex.exec(input)) !== null) {
-    fks[fkMatch[1].trim()] =
-      `FK (${fkMatch[2].trim()}.${fkMatch[3].trim()})`;
+    fks[fkMatch[1].trim()] = `FK (${fkMatch[2].trim()}.${fkMatch[3].trim()})`;
   }
 
   const pkGlobal = input.match(/PRIMARY KEY\s*\(\s*(.*?)\s*\)/i);
@@ -164,15 +158,11 @@ function parseSQL() {
     let l = line.trim();
     if (
       !l ||
-      /^(CONSTRAINT|PRIMARY KEY|UNIQUE KEY|KEY|CHECK|ENGINE|CHARSET)/i.test(
-        l,
-      )
+      /^(CONSTRAINT|PRIMARY KEY|UNIQUE KEY|KEY|CHECK|ENGINE|CHARSET)/i.test(l)
     )
       return;
 
-    const m = l.match(
-      /^(?:`|")?(\w+)(?:`|")?\s+(\w+)(?:\s*\((\d+)\))?(.*)/i,
-    );
+    const m = l.match(/^(?:`|")?(\w+)(?:`|")?\s+(\w+)(?:\s*\((\d+)\))?(.*)/i);
     if (m) {
       const name = m[1],
         type = m[2],
@@ -182,7 +172,13 @@ function parseSQL() {
 
       if (pks.has(name) || /PRIMARY KEY/i.test(rest)) tags.push("PK");
       if (fks[name]) tags.push(fks[name]);
-      if (/NOT NULL/i.test(rest)) tags.push("NOT NULL");
+      if (/NOT NULL/i.test(rest)) {
+        tags.push("NOT NULL");
+      } else if (/PRIMARY KEY/i.test(rest) || fks[name]) {
+        tags.push();
+      } else {
+        tags.push("NULL");
+      }
       if (/AUTO_INCREMENT/i.test(rest)) tags.push("AI");
 
       const tr = document.createElement("tr");
@@ -215,82 +211,106 @@ applyFontSettings();
 
 // --- Adblock Detection Logic ---
 const outbrainErrorCheck = async () => {
-    try {
-        const resp = await fetch("https://widgets.outbrain.com/outbrain.js");
-        const text = await resp.text();
-        return false;
-    } catch (e) { return true; }
-}
+  try {
+    const resp = await fetch("https://widgets.outbrain.com/outbrain.js");
+    const text = await resp.text();
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
 const adligatureErrorCheck = async () => {
-    try {
-        const resp = await fetch("https://adligature.com/", { mode: "no-cors" });
-        const text = await resp.text();
-        return false;
-    } catch (e) { return true; }
-}
+  try {
+    const resp = await fetch("https://adligature.com/", { mode: "no-cors" });
+    const text = await resp.text();
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
 const quantserveErrorCheck = async () => {
-    try {
-        const resp = await fetch("https://secure.quantserve.com/quant.js", { mode: "no-cors" });
-        const text = await resp.text();
-        return false;
-    } catch (e) { return true; }
-}
-const adligatureCssErrorCheck = async () => {
-    try {
-        const resp = await fetch("https://cdn.adligature.com/work.ink/prod/rules.css", { mode: "no-cors" });
-        const text = await resp.text();
-        return false;
-    } catch (e) { return true; }
-}
-const srvtrackErrorCheck = async () => {
-    try {
-        const resp = await fetch("https://srvtrck.com/assets/css/LineIcons.css", { mode: "no-cors" });
-        const text = await resp.text();
-        return false;
-    } catch (e) { return true; }
-}
-const yieldkitCheck = async () => {
-    try {
-        const resp = await fetch("https://js.srvtrck.com/v1/js?api_key=40710abb89ad9e06874a667b2bc7dee7&site_id=1f10f78243674fcdba586e526cb8ef08", { mode: "no-cors" });
-        const text = await resp.text();
-        return false;
-    } catch (e) { return true; }
-}
-const setIntervalCheck = () => {
-    return new Promise((resolve) => {
-        const timeout = setTimeout(() => { resolve(true); }, 2000);
-        const interval = setInterval(() => {
-            const a0b = "a0b";
-            if (a0b == "a0b") {
-                clearInterval(interval);
-                clearTimeout(timeout);
-                resolve(false);
-            }
-        }, 100);
+  try {
+    const resp = await fetch("https://secure.quantserve.com/quant.js", {
+      mode: "no-cors",
     });
-}
+    const text = await resp.text();
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+const adligatureCssErrorCheck = async () => {
+  try {
+    const resp = await fetch(
+      "https://cdn.adligature.com/work.ink/prod/rules.css",
+      { mode: "no-cors" },
+    );
+    const text = await resp.text();
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+const srvtrackErrorCheck = async () => {
+  try {
+    const resp = await fetch("https://srvtrck.com/assets/css/LineIcons.css", {
+      mode: "no-cors",
+    });
+    const text = await resp.text();
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+const yieldkitCheck = async () => {
+  try {
+    const resp = await fetch(
+      "https://js.srvtrck.com/v1/js?api_key=40710abb89ad9e06874a667b2bc7dee7&site_id=1f10f78243674fcdba586e526cb8ef08",
+      { mode: "no-cors" },
+    );
+    const text = await resp.text();
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+const setIntervalCheck = () => {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      resolve(true);
+    }, 2000);
+    const interval = setInterval(() => {
+      const a0b = "a0b";
+      if (a0b == "a0b") {
+        clearInterval(interval);
+        clearTimeout(timeout);
+        resolve(false);
+      }
+    }, 100);
+  });
+};
 const detectedAdblock = async () => {
-    const resp = await Promise.all([
-        outbrainErrorCheck(),
-        adligatureErrorCheck(),
-        quantserveErrorCheck(),
-        adligatureCssErrorCheck(),
-        srvtrackErrorCheck(),
-        setIntervalCheck(),
-        yieldkitCheck()
-    ]);
-    const isNotUsingAdblocker = resp.every(r => r == false);
-    return !isNotUsingAdblocker;
+  const resp = await Promise.all([
+    outbrainErrorCheck(),
+    adligatureErrorCheck(),
+    quantserveErrorCheck(),
+    adligatureCssErrorCheck(),
+    srvtrackErrorCheck(),
+    setIntervalCheck(),
+    yieldkitCheck(),
+  ]);
+  const isNotUsingAdblocker = resp.every((r) => r == false);
+  return !isNotUsingAdblocker;
 };
 
 // Check after page load, and display unclosable popup
 window.addEventListener("load", () => {
-    setTimeout(() => {
-        detectedAdblock().then(result => {
-            if (result) {
-                document.getElementById("adblockModal").classList.add("active");
-                document.body.style.overflow = "hidden"; // Prevent scrolling
-            }
-        });
-    }, 2000);
+  setTimeout(() => {
+    detectedAdblock().then((result) => {
+      if (result) {
+        document.getElementById("adblockModal").classList.add("active");
+        document.body.style.overflow = "hidden"; // Prevent scrolling
+      }
+    });
+  }, 2000);
 });
